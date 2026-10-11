@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
 
 export function Layout() {
-  const { user, isAdmin, logout } = useAuth()
+  const { user, isAdmin, isMerchant, logout } = useAuth()
   const navigate = useNavigate()
 
   const handleLogout = async () => {
@@ -21,6 +21,7 @@ export function Layout() {
           <NavLink to="/" end>
             Accounts
           </NavLink>
+          {isMerchant && <NavLink to="/merchant/holds">Holds</NavLink>}
           {isAdmin && (
             <>
               <NavLink to="/admin/journal">Journal</NavLink>

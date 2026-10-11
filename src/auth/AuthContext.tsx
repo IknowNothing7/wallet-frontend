@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 
+import { forgetMyAccounts } from '../accounts'
 import { hasStoredSession, logoutSession, refreshSession, setSessionListener, startSession } from '../api/client'
 import { authApi } from '../api/endpoints'
 import type { User } from '../api/types'
@@ -7,6 +8,7 @@ import type { User } from '../api/types'
 interface AuthState {
   user: User | null
   isAdmin: boolean
+  isMerchant: boolean
   // True while a stored session is being restored on page load
   restoring: boolean
   login: (email: string, password: string) => Promise<void>
@@ -22,7 +24,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Keeps React state in sync with the API client, e.g. when a failed refresh ends the session
-    setSessionListener((auth) => setUser(auth?.user ?? null))
+    setSessionListener((auth) => {
+      if (!auth) forgetMyAccounts()
+      setUser(auth?.user ?? null)
+    })
     if (hasStoredSession()) {
       refreshSession().finally(() => setRestoring(false))
     }
@@ -40,7 +45,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => logoutSession(), [])
 
   const value = useMemo<AuthState>(
-    () => ({ user, isAdmin: user?.role === 'ADMIN', restoring, login, register, logout }),
+    () => ({
+      user,
+      isAdmin: user?.role === 'ADMIN',
+      isMerchant: user?.role === 'MERCHANT',
+      restoring,
+      login,
+      register,
+      logout,
+    }),
     [user, restoring, login, register, logout],
   )
 

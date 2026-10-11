@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 
+import { forgetMyAccounts } from '../accounts'
 import { accountApi } from '../api/endpoints'
 import type { Account } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import { ErrorMessage, StatusBadge } from '../components/ui'
+import { CURRENCIES } from '../currencies'
 import { formatMoney } from '../format'
-
-const CURRENCIES = ['USD', 'EUR', 'GBP', 'CHF', 'JPY']
 
 export function DashboardPage() {
   const { user } = useAuth()
@@ -34,6 +34,7 @@ export function DashboardPage() {
     setCreateError(null)
     try {
       const account = await accountApi.create(currency, user.id)
+      forgetMyAccounts()
       setAccounts((list) => [...(list ?? []), account])
     } catch (err) {
       setCreateError((err as Error).message)

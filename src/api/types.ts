@@ -83,24 +83,55 @@ export interface Hold {
   releasedAt: string | null
 }
 
+export type PostingDirection = 'DEBIT' | 'CREDIT'
+
 export interface Posting {
   id: number
   journalEntryId: number
   accountId: number
-  direction: 'DEBIT' | 'CREDIT'
+  direction: PostingDirection
   amount: number
   currency: string
   createdAt: string
 }
 
+export const JOURNAL_ENTRY_TYPES = [
+  'TRANSFER',
+  'DEPOSIT',
+  'WITHDRAWAL',
+  'FEE',
+  'HOLD_CAPTURE',
+  'HOLD_RELEASE',
+  'REVERSAL',
+] as const
+
+export type JournalEntryType = (typeof JOURNAL_ENTRY_TYPES)[number]
+
 export interface JournalEntry {
   id: number
   createdAt: string
-  entryType: string
+  entryType: JournalEntryType
   description: string | null
   referenceType: string | null
   referenceId: number | null
   postings: Posting[] | null
+}
+
+// Request bodies
+
+export interface PostingRequest {
+  accountId: number
+  direction: PostingDirection
+  amount: number
+  currency: string
+}
+
+export interface JournalEntryRequest {
+  entryType: JournalEntryType
+  description?: string
+  referenceType?: string
+  referenceId?: number
+  postings: PostingRequest[]
 }
 
 export type OutboxStatus = 'PENDING' | 'PUBLISHED' | 'FAILED'
