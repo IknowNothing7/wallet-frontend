@@ -1,8 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
 
+import { rememberRecentAccounts } from '../accounts'
 import { accountApi, depositApi, holdApi, postingApi, transferApi } from '../api/endpoints'
 import type { Account } from '../api/types'
+import { useAuth } from '../auth/AuthContext'
+import { AccountPicker } from '../components/AccountPicker'
 import { DataTable, ErrorMessage, Pager, StatusBadge } from '../components/ui'
 import { formatDate, formatMoney, toMinorUnits } from '../format'
 import { usePaged } from '../usePaged'
@@ -76,12 +79,13 @@ export function AccountPage() {
 }
 
 function TransfersTab({ account }: { account: Account }) {
-  const { data, error, loading, setPage } = usePaged(
+  const { data, error, loading, setPage, reload } = usePaged(
     (page, size) => transferApi.forAccount(account.id, page, size),
     [account.id],
   )
   return (
     <>
+      <TransferForm account={account} onCreated={reload} />
       <DataTable
         columns={['Date', 'Direction', 'Counterparty', 'Amount', 'Status']}
         rows={data?.content}
@@ -110,6 +114,72 @@ function TransfersTab({ account }: { account: Account }) {
       />
       <Pager data={data} onPage={setPage} />
     </>
+  )
+}
+
+function TransferForm({ account, onCreated }: { account: Account; onCreated: () => void }) {
+  const { user } = useAuth()
+  const [toAccount, setToAccount] = useState('')
+  const [amount, setAmount] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault()
+    const toAccountId = Number(toAccount)
+    if (!Number.isSafeInteger(toAccountId) || toAccountId <= 0) {
+      setError('Enter the number of the account to send to')
+      return
+    }
+    if (toAccountId === account.id) {
+      setError("You can't send money to the same account")
+      return
+    }
+    const minor = toMinorUnits(amount, account.currency)
+    if (minor === null) {
+      setError('Enter a positive amount, e.g. 25.00')
+      return
+    }
+    setSubmitting(true)
+    setError(null)
+    try {
+      await transferApi.create(account.id, toAccountId, minor, account.currency)
+      if (user) rememberRecentAccounts(user.id, [toAccountId])
+      setToAccount('')
+      setAmount('')
+      onCreated()
+    } catch (err) {
+      setError((err as Error).message)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <form className="inline-form action-form" onSubmit={submit}>
+      <AccountPicker
+        value={toAccount}
+        onChange={setToAccount}
+        currency={account.currency}
+        exclude={account.id}
+        placeholder="To account #"
+        label="To account number"
+      />
+      <input
+        inputMode="decimal"
+        placeholder={`Amount (${account.currency})`}
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        aria-label="Amount"
+      />
+      <button type="submit" className="primary" disabled={submitting}>
+        {submitting ? 'Sending…' : 'Send money'}
+      </button>
+      <span className="muted small">
+        The other account must also be in {account.currency}. Transfers start as PENDING.
+      </span>
+      <ErrorMessage error={error} />
+    </form>
   )
 }
 
@@ -174,7 +244,7 @@ function DepositForm({ account, onCreated }: { account: Account; onCreated: () =
   }
 
   return (
-    <form className="inline-form deposit-form" onSubmit={submit}>
+    <form className="inline-form action-form" onSubmit={submit}>
       <input
         inputMode="decimal"
         placeholder={`Amount (${account.currency})`}

@@ -108,8 +108,17 @@ main { max-width: 1000px; margin: 0 auto; padding: 1.5rem 16px 3rem; }
   margin-bottom: 1rem;
 }
 .inline-form { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
-.deposit-form { margin-bottom: 1rem; }
-.deposit-form .error { flex-basis: 100%; }
+.action-form { margin-bottom: 1rem; }
+.action-form .error { flex-basis: 100%; }
+
+h2 { font-size: 1.1rem; margin: 2rem 0 0.75rem; }
+
+/* Card forms (holds, journal entries) */
+.stacked-form { display: flex; flex-direction: column; gap: 0.9rem; max-width: 560px; margin-top: 1rem; }
+.stacked-form label { display: flex; flex-direction: column; gap: 0.3rem; font-weight: 500; }
+.form-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.form-row > label { flex: 1 1 140px; }
+
 
 /* Auth */
 .auth-card {
@@ -172,3 +181,46 @@ tr.clickable:hover { background: var(--muted-bg); }
   .topbar { flex-wrap: wrap; gap: 0.75rem; padding: 0.75rem 16px; }
   .topbar nav { order: 3; flex-basis: 100%; }
 }
+
+/* Journal entry editor */
+.journal-form { max-width: none; margin-bottom: 1.5rem; }
+.journal-form h2 { margin: 0; }
+.label { font-weight: 500; margin-bottom: 0.3rem; }
+.postings-editor { display: flex; flex-direction: column; gap: 0.5rem; }
+.posting-draft { display: grid; grid-template-columns: minmax(6rem, 1fr) 7rem minmax(6rem, 1fr) 5.5rem 2.5rem; gap: 0.5rem; max-width: 560px; }
+.posting-draft button { padding: 0.45rem 0; }
+.detail-row .stacked-form { margin-top: 0.75rem; }
+
+@media (max-width: 600px) {
+  .posting-draft { grid-template-columns: 1fr 1fr; }
+}
+
+/* Account picker */
+.picker { position: relative; min-width: 0; }
+.picker input { width: 100%; }
+.picker-list {
+  position: absolute;
+  z-index: 10;
+  top: 100%;
+  left: 0;
+  min-width: max(100%, 14rem);
+  max-height: 16rem;
+  overflow-y: auto;
+  margin: 0.25rem 0 0;
+  padding: 0.25rem 0;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.15);
+}
+.picker-group {
+  padding: 0.35rem 0.75rem 0.15rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  font-weight: 600;
+}
+.picker-option { display: flex; justify-content: space-between; gap: 1rem; padding: 0.4rem 0.75rem; cursor: pointer; white-space: nowrap; font-weight: 400; }
+.picker-option.active { background: var(--muted-bg); }

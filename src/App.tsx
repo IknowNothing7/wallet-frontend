@@ -8,6 +8,7 @@ import { LoginPage, RegisterPage } from './pages/AuthPages'
 import { DashboardPage } from './pages/DashboardPage'
 import { JournalPage } from './pages/admin/JournalPage'
 import { OutboxPage } from './pages/admin/OutboxPage'
+import { HoldsPage } from './pages/merchant/HoldsPage'
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { user, restoring } = useAuth()
@@ -20,6 +21,11 @@ function RequireAuth({ children }: { children: ReactNode }) {
 function RequireAdmin({ children }: { children: ReactNode }) {
   const { isAdmin } = useAuth()
   return isAdmin ? children : <Navigate to="/" replace />
+}
+
+function RequireMerchant({ children }: { children: ReactNode }) {
+  const { isMerchant } = useAuth()
+  return isMerchant ? children : <Navigate to="/" replace />
 }
 
 // Login and register are pointless once logged in. This also performs the redirect after logging in,
@@ -42,6 +48,7 @@ export function App() {
           <Route element={<RequireAuth><Layout /></RequireAuth>}>
             <Route index element={<DashboardPage />} />
             <Route path="accounts/:id" element={<AccountPage />} />
+            <Route path="merchant/holds" element={<RequireMerchant><HoldsPage /></RequireMerchant>} />
             <Route path="admin/journal" element={<RequireAdmin><JournalPage /></RequireAdmin>} />
             <Route path="admin/outbox" element={<RequireAdmin><OutboxPage /></RequireAdmin>} />
           </Route>

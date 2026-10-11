@@ -5,10 +5,12 @@ import type {
   Deposit,
   Hold,
   JournalEntry,
+  JournalEntryRequest,
   OutboxEvent,
   OutboxStatus,
   PageResponse,
   Posting,
+  PostingRequest,
   Transfer,
 } from './types'
 
@@ -30,6 +32,14 @@ export const accountApi = {
 export const transferApi = {
   forAccount: (accountId: number, page: number, size: number) =>
     api<PageResponse<Transfer>>('GET', `/transfer/account/${accountId}?${paging(page, size)}`),
+  // The request names the accounts idFromAccount / idToAccount, unlike the response's fromAccountId / toAccountId
+  create: (fromAccountId: number, toAccountId: number, amount: number, currency: string) =>
+    api<Transfer>('POST', '/transfer/create', {
+      idFromAccount: fromAccountId,
+      idToAccount: toAccountId,
+      amount,
+      currency,
+    }),
 }
 
 export const depositApi = {
@@ -42,16 +52,25 @@ export const depositApi = {
 export const holdApi = {
   forAccount: (accountId: number, page: number, size: number) =>
     api<PageResponse<Hold>>('GET', `/hold/account/${accountId}?${paging(page, size)}`),
+  // Merchants only; expiresAt is an ISO instant in the future
+  create: (accountId: number, amount: number, currency: string, expiresAt: string) =>
+    api<Hold>('POST', '/hold/create', { accountId, amount, currency, expiresAt }),
 }
 
 export const postingApi = {
   forAccount: (accountId: number, page: number, size: number) =>
     api<PageResponse<Posting>>('GET', `/posting/account/${accountId}?${paging(page, size)}`),
+  // Admins only; debits must equal credits per currency
+  addToEntry: (journalEntryId: number, postings: PostingRequest[]) =>
+    api<Posting[]>('POST', `/posting/journal-entry/${journalEntryId}`, postings),
 }
 
 export const journalApi = {
   list: (page: number, size: number) => api<PageResponse<JournalEntry>>('GET', `/journal-entry?${paging(page, size)}`),
   get: (id: number) => api<JournalEntry>('GET', `/journal-entry/${id}`),
+  create: (request: JournalEntryRequest) => api<JournalEntry>('POST', '/journal-entry/create', request),
+  byReference: (type: string, id: number) =>
+    api<JournalEntry[]>('GET', `/journal-entry/reference?type=${encodeURIComponent(type)}&id=${id}`),
 }
 
 export const outboxApi = {

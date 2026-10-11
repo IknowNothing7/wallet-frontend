@@ -1,8 +1,9 @@
 # wallet-frontend
 
 A small React app for [wallet-platform](../wallet-platform): log in, see your accounts, their transfers,
-deposits, holds and ledger postings, open accounts and create deposits. Admins also get the journal and
-the outbox (with retry for failed events).
+deposits, holds and ledger postings, open accounts, send money between accounts and create deposits.
+Merchants can place holds on a customer's account. Admins also get the journal (browse, look up by reference,
+create entries and add postings) and the outbox (with retry for failed events).
 
 Built with Vite, React 19, TypeScript and react-router. No UI library; styles are in `src/styles.css`
 (light and dark mode follow the OS setting).
@@ -23,10 +24,12 @@ In development the app calls the API at `/backend/...`, and the Vite dev server 
 the backend, so the browser never makes a cross-origin request. To point at a backend elsewhere, start
 the dev server with `BACKEND_URL=http://host:port npm run dev`.
 
-To see the admin pages, give a user the admin role in the database:
+With the backend's `dev` profile, test users are created on startup, all with the password `Password1!`:
+`admin@wallet.local`, `alice@wallet.local`, `bob@wallet.local` (regular users) and `merchant@wallet.local`.
+Otherwise, give a user a role in the database:
 
 ```sql
-update app_user set role = 'ADMIN' where email = 'you@example.com';
+update app_user set role = 'ADMIN' where email = 'you@example.com';  -- or 'MERCHANT'
 ```
 
 ## Production build
@@ -58,8 +61,9 @@ src/
   api/endpoints.ts    one function per backend endpoint
   api/types.ts        response types (amounts are integers in minor units, e.g. cents)
   auth/AuthContext.tsx
-  components/         layout, table, pager, status badge
-  pages/              login/register, accounts, account detail, admin journal and outbox
+  components/         layout, table, pager, status badge, journal postings editor
+  pages/              login/register, accounts, account detail, merchant holds, admin journal and outbox
+  currencies.ts       currencies offered in the forms
   format.ts           money and date formatting
   usePaged.ts         hook for the backend's paged endpoints
 ```
