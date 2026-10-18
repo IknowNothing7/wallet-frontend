@@ -67,6 +67,7 @@ button:hover:not(:disabled) { border-color: var(--accent); }
 button:disabled { opacity: 0.6; cursor: default; }
 button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
 button.link { border: none; background: none; padding: 0; color: var(--accent); }
+button.danger { background: var(--bad); border-color: var(--bad); color: var(--accent-text); font-weight: 600; }
 
 input, select {
   border: 1px solid var(--border);
@@ -82,6 +83,8 @@ input:focus, select:focus, button:focus-visible { outline: 2px solid var(--accen
 .center { text-align: center; margin-top: 4rem; }
 .mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 0.85rem; }
 .error { color: var(--bad); background: var(--bad-bg); padding: 0.5rem 0.75rem; border-radius: var(--radius); margin: 0.5rem 0; }
+.success { color: var(--good); background: var(--good-bg); padding: 0.5rem 0.75rem; border-radius: var(--radius); margin: 0.5rem 0; }
+.notice { color: var(--warn); background: var(--warn-bg); padding: 0.5rem 0.75rem; border-radius: var(--radius); margin: 0 0 1rem; }
 
 /* Layout */
 .topbar {
@@ -109,7 +112,13 @@ main { max-width: 1000px; margin: 0 auto; padding: 1.5rem 16px 3rem; }
 }
 .inline-form { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
 .action-form { margin-bottom: 1rem; }
-.action-form .error { flex-basis: 100%; }
+.action-form .error, .action-form .success { flex-basis: 100%; }
+.detail-row .inline-form .error { flex-basis: 100%; }
+td.actions { text-align: right; }
+td.actions > * + * { margin-left: 0.75rem; }
+td.actions button { padding: 0.25rem 0.7rem; }
+.section-header { margin: 2rem 0 0.75rem; align-items: center; }
+.section-header h2 { margin: 0; }
 
 h2 { font-size: 1.1rem; margin: 2rem 0 0.75rem; }
 
@@ -180,19 +189,6 @@ tr.clickable:hover { background: var(--muted-bg); }
 @media (max-width: 600px) {
   .topbar { flex-wrap: wrap; gap: 0.75rem; padding: 0.75rem 16px; }
   .topbar nav { order: 3; flex-basis: 100%; }
-}
-
-/* Journal entry editor */
-.journal-form { max-width: none; margin-bottom: 1.5rem; }
-.journal-form h2 { margin: 0; }
-.label { font-weight: 500; margin-bottom: 0.3rem; }
-.postings-editor { display: flex; flex-direction: column; gap: 0.5rem; }
-.posting-draft { display: grid; grid-template-columns: minmax(6rem, 1fr) 7rem minmax(6rem, 1fr) 5.5rem 2.5rem; gap: 0.5rem; max-width: 560px; }
-.posting-draft button { padding: 0.45rem 0; }
-.detail-row .stacked-form { margin-top: 0.75rem; }
-
-@media (max-width: 600px) {
-  .posting-draft { grid-template-columns: 1fr 1fr; }
 }
 
 /* Account picker */

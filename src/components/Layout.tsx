@@ -24,6 +24,7 @@ export function Layout() {
           {isMerchant && <NavLink to="/merchant/holds">Holds</NavLink>}
           {isAdmin && (
             <>
+              <NavLink to="/admin/users">Users</NavLink>
               <NavLink to="/admin/journal">Journal</NavLink>
               <NavLink to="/admin/outbox">Outbox</NavLink>
             </>

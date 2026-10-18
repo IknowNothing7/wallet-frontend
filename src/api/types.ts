@@ -52,7 +52,8 @@ export interface Transfer {
   toAccountId: number
   amount: number
   currency: string
-  status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REVERSED'
+  // Booked synchronously: a new transfer is already COMPLETED or FAILED
+  status: 'COMPLETED' | 'FAILED' | 'REVERSED'
   failureReason: string | null
 }
 
@@ -64,7 +65,8 @@ export interface Deposit {
   amount: number
   currency: string
   gateway: string
-  gatewayReference: string
+  // Assigned by the bank once it has the payment
+  gatewayReference: string | null
   status: 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'EXPIRED'
   failureReason: string | null
   expiresAt: string | null
@@ -81,6 +83,8 @@ export interface Hold {
   expiresAt: string
   capturedEntryId: number | null
   releasedAt: string | null
+  // The user who placed the hold; only they may capture or release it
+  merchantId: number | null
 }
 
 export type PostingDirection = 'DEBIT' | 'CREDIT'
@@ -117,21 +121,14 @@ export interface JournalEntry {
   postings: Posting[] | null
 }
 
-// Request bodies
+// What a journal entry's referenceType can be; each business object books under its own name
+export const REFERENCE_TYPES = ['transfer', 'deposit', 'hold'] as const
 
-export interface PostingRequest {
-  accountId: number
-  direction: PostingDirection
-  amount: number
-  currency: string
-}
+export type UserSortField = 'NAME' | 'EMAIL'
 
-export interface JournalEntryRequest {
-  entryType: JournalEntryType
-  description?: string
-  referenceType?: string
-  referenceId?: number
-  postings: PostingRequest[]
+export interface UserSearch {
+  keyword?: string
+  sortField?: UserSortField
 }
 
 export type OutboxStatus = 'PENDING' | 'PUBLISHED' | 'FAILED'

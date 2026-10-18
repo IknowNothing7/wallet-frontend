@@ -88,8 +88,14 @@ export function refreshSession(): Promise<AuthResponse | null> {
   return refreshInFlight
 }
 
-async function send<T>(method: string, path: string, body: unknown, withAuth: boolean): Promise<T> {
-  const headers: Record<string, string> = { Accept: 'application/json' }
+async function send<T>(
+  method: string,
+  path: string,
+  body: unknown,
+  withAuth: boolean,
+  extraHeaders?: Record<string, string>,
+): Promise<T> {
+  const headers: Record<string, string> = { Accept: 'application/json', ...extraHeaders }
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   if (withAuth && accessToken) headers.Authorization = `Bearer ${accessToken}`
 
@@ -123,13 +129,18 @@ async function send<T>(method: string, path: string, body: unknown, withAuth: bo
 }
 
 /** Authenticated request; on 401 refreshes the access token once and retries. */
-export async function api<T>(method: string, path: string, body?: unknown): Promise<T> {
+export async function api<T>(
+  method: string,
+  path: string,
+  body?: unknown,
+  headers?: Record<string, string>,
+): Promise<T> {
   try {
-    return await send<T>(method, path, body, true)
+    return await send<T>(method, path, body, true, headers)
   } catch (error) {
     if (error instanceof ApiError && error.status === 401 && hasStoredSession()) {
       const refreshed = await refreshSession()
-      if (refreshed) return send<T>(method, path, body, true)
+      if (refreshed) return send<T>(method, path, body, true, headers)
     }
     throw error
   }
