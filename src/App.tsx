@@ -8,6 +8,7 @@ import { LoginPage, RegisterPage } from './pages/AuthPages'
 import { DashboardPage } from './pages/DashboardPage'
 import { JournalPage } from './pages/admin/JournalPage'
 import { OutboxPage } from './pages/admin/OutboxPage'
+import { UsersPage } from './pages/admin/UsersPage'
 import { HoldsPage } from './pages/merchant/HoldsPage'
 
 function RequireAuth({ children }: { children: ReactNode }) {
@@ -51,6 +52,7 @@ export function App() {
             <Route path="merchant/holds" element={<RequireMerchant><HoldsPage /></RequireMerchant>} />
             <Route path="admin/journal" element={<RequireAdmin><JournalPage /></RequireAdmin>} />
             <Route path="admin/outbox" element={<RequireAdmin><OutboxPage /></RequireAdmin>} />
+            <Route path="admin/users" element={<RequireAdmin><UsersPage /></RequireAdmin>} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

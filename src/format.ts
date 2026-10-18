@@ -32,3 +32,8 @@ export function formatDate(iso: string | null | undefined): string {
   if (!iso) return '—'
   return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
 }
+
+// Same rule as the backend: 2% of the amount, rounded down in the user's favour
+export function feeOf(minorUnits: number): number {
+  return Math.floor((minorUnits * 200) / 10_000)
+}

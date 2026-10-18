@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { Fragment, type ReactNode } from 'react'
 
 import type { PageResponse } from '../api/types'
 
@@ -7,6 +7,15 @@ export function ErrorMessage({ error }: { error: string | null }) {
   return (
     <p className="error" role="alert">
       {error}
+    </p>
+  )
+}
+
+export function SuccessMessage({ message }: { message: string | null }) {
+  if (!message) return null
+  return (
+    <p className="success" role="status">
+      {message}
     </p>
   )
 }
@@ -22,6 +31,11 @@ const STATUS_TONE: Record<string, string> = {
   EXPIRED: 'muted',
   RELEASED: 'muted',
   REVERSED: 'muted',
+  FROZEN: 'warn',
+  CLOSED: 'muted',
+  ADMIN: 'bad',
+  MERCHANT: 'good',
+  USER: 'muted',
 }
 
 export function StatusBadge({ status }: { status: string }) {
@@ -54,6 +68,7 @@ export function DataTable<T>({
   empty,
   rowKey,
   renderRow,
+  renderDetail,
 }: {
   columns: string[]
   rows: T[] | undefined
@@ -62,6 +77,8 @@ export function DataTable<T>({
   empty: string
   rowKey: (row: T) => string | number
   renderRow: (row: T) => ReactNode
+  /** Optional full-width row under a row, e.g. an inline form; null for none. */
+  renderDetail?: (row: T) => ReactNode | null
 }) {
   if (error) return <ErrorMessage error={error} />
   if (loading && !rows) return <p className="muted">Loading…</p>
@@ -77,9 +94,19 @@ export function DataTable<T>({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
-            <tr key={rowKey(row)}>{renderRow(row)}</tr>
-          ))}
+          {rows.map((row) => {
+            const detail = renderDetail?.(row)
+            return (
+              <Fragment key={rowKey(row)}>
+                <tr>{renderRow(row)}</tr>
+                {detail && (
+                  <tr className="detail-row">
+                    <td colSpan={columns.length}>{detail}</td>
+                  </tr>
+                )}
+              </Fragment>
+            )
+          })}
         </tbody>
       </table>
     </div>
