@@ -13,26 +13,26 @@ export function Layout() {
 
   return (
     <div className="app">
-      <header className="topbar">
-        <NavLink to="/" className="brand">
+      <header className="topbar" data-testid="topbar">
+        <NavLink to="/" className="brand" data-testid="nav-brand">
           Wallet
         </NavLink>
         <nav>
-          <NavLink to="/" end>
+          <NavLink to="/" end data-testid="nav-accounts">
             Accounts
           </NavLink>
-          {isMerchant && <NavLink to="/merchant/holds">Holds</NavLink>}
+          {isMerchant && <NavLink to="/merchant/holds" data-testid="nav-holds">Holds</NavLink>}
           {isAdmin && (
             <>
-              <NavLink to="/admin/users">Users</NavLink>
-              <NavLink to="/admin/journal">Journal</NavLink>
-              <NavLink to="/admin/outbox">Outbox</NavLink>
+              <NavLink to="/admin/users" data-testid="nav-users">Users</NavLink>
+              <NavLink to="/admin/journal" data-testid="nav-journal">Journal</NavLink>
+              <NavLink to="/admin/outbox" data-testid="nav-outbox">Outbox</NavLink>
             </>
           )}
         </nav>
         <div className="user">
-          <span title={user?.email}>{user?.name}</span>
-          <button className="link" onClick={handleLogout}>
+          <span title={user?.email} data-testid="current-user-name">{user?.name}</span>
+          <button className="link" onClick={handleLogout} data-testid="logout-button">
             Log out
           </button>
         </div>

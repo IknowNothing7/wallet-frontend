@@ -48,7 +48,7 @@ export function UsersPage() {
         </div>
       </div>
 
-      <form className="inline-form action-form" onSubmit={submit}>
+      <form className="inline-form action-form" onSubmit={submit} data-testid="users-search-form">
         <input
           type="search"
           placeholder="Name or email"
@@ -56,19 +56,23 @@ export function UsersPage() {
           onChange={(e) => setKeyword(e.target.value)}
           maxLength={100}
           aria-label="Search by name or email"
+          data-testid="users-search-input"
         />
         <select
           value={search.sortField ?? ''}
           onChange={(e) => setSearch((s) => ({ ...s, sortField: (e.target.value || undefined) as UserSortField }))}
           aria-label="Sort by"
+          data-testid="users-sort"
         >
           <option value="">Sort by number</option>
           <option value="NAME">Sort by name</option>
           <option value="EMAIL">Sort by email</option>
         </select>
-        <button type="submit">Search</button>
+        <button type="submit" data-testid="users-search-submit">
+          Search
+        </button>
       </form>
-      <ErrorMessage error={actionError} />
+      <ErrorMessage error={actionError} testId="users-action-error" />
 
       <DataTable
         columns={['#', 'Name', 'Email', 'Role', 'Joined', '']}
@@ -77,21 +81,27 @@ export function UsersPage() {
         error={error}
         empty={search.keyword ? `No users match “${search.keyword}”.` : 'No users.'}
         rowKey={(u) => u.id}
+        testId="users-table"
         renderRow={(u) => (
           <>
             <td>{u.id}</td>
             <td>
               {u.name}
-              {u.id === me?.id && <span className="muted"> (you)</span>}
+              {u.id === me?.id && (
+                <span className="muted" data-testid="user-is-you">
+                  {' '}
+                  (you)
+                </span>
+              )}
             </td>
             <td>{u.email}</td>
             <td>
-              <StatusBadge status={u.role} />
+              <StatusBadge status={u.role} testId="user-role" />
             </td>
             <td>{formatDate(u.createdAt)}</td>
             <td className="actions">
               {u.role !== 'ADMIN' && (
-                <button disabled={changing === u.id} onClick={() => toggleMerchant(u)}>
+                <button disabled={changing === u.id} onClick={() => toggleMerchant(u)} data-testid="user-toggle-merchant">
                   {changing === u.id ? 'Saving…' : u.role === 'MERCHANT' ? 'Make user' : 'Make merchant'}
                 </button>
               )}
@@ -99,7 +109,7 @@ export function UsersPage() {
           </>
         )}
       />
-      <Pager data={data} onPage={setPage} />
+      <Pager data={data} onPage={setPage} testId="users-pager" />
     </>
   )
 }

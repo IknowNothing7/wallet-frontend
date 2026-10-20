@@ -2,19 +2,22 @@ import { Fragment, type ReactNode } from 'react'
 
 import type { PageResponse } from '../api/types'
 
-export function ErrorMessage({ error }: { error: string | null }) {
+// Test ids are kebab-case: `<area>-<element>`, with the record id appended for repeated rows
+// (`transfers-table-row-42`). Shared components take a `testId` and derive their children's ids from it.
+
+export function ErrorMessage({ error, testId = 'error-message' }: { error: string | null; testId?: string }) {
   if (!error) return null
   return (
-    <p className="error" role="alert">
+    <p className="error" role="alert" data-testid={testId}>
       {error}
     </p>
   )
 }
 
-export function SuccessMessage({ message }: { message: string | null }) {
+export function SuccessMessage({ message, testId = 'success-message' }: { message: string | null; testId?: string }) {
   if (!message) return null
   return (
-    <p className="success" role="status">
+    <p className="success" role="status" data-testid={testId}>
       {message}
     </p>
   )
@@ -38,21 +41,37 @@ const STATUS_TONE: Record<string, string> = {
   USER: 'muted',
 }
 
-export function StatusBadge({ status }: { status: string }) {
-  return <span className={`badge badge-${STATUS_TONE[status] ?? 'muted'}`}>{status}</span>
+export function StatusBadge({ status, testId = 'status-badge' }: { status: string; testId?: string }) {
+  return (
+    <span className={`badge badge-${STATUS_TONE[status] ?? 'muted'}`} data-testid={testId}>
+      {status}
+    </span>
+  )
 }
 
-export function Pager({ data, onPage }: { data: PageResponse<unknown> | null; onPage: (page: number) => void }) {
+export function Pager({
+  data,
+  onPage,
+  testId = 'pager',
+}: {
+  data: PageResponse<unknown> | null
+  onPage: (page: number) => void
+  testId?: string
+}) {
   if (!data || data.totalPages <= 1) return null
   return (
-    <div className="pager">
-      <button disabled={data.page === 0} onClick={() => onPage(data.page - 1)}>
+    <div className="pager" data-testid={testId}>
+      <button disabled={data.page === 0} onClick={() => onPage(data.page - 1)} data-testid={`${testId}-newer`}>
         ← Newer
       </button>
-      <span>
+      <span data-testid={`${testId}-info`}>
         Page {data.page + 1} of {data.totalPages}
       </span>
-      <button disabled={data.page + 1 >= data.totalPages} onClick={() => onPage(data.page + 1)}>
+      <button
+        disabled={data.page + 1 >= data.totalPages}
+        onClick={() => onPage(data.page + 1)}
+        data-testid={`${testId}-older`}
+      >
         Older →
       </button>
     </div>
@@ -69,6 +88,7 @@ export function DataTable<T>({
   rowKey,
   renderRow,
   renderDetail,
+  testId,
 }: {
   columns: string[]
   rows: T[] | undefined
@@ -79,13 +99,15 @@ export function DataTable<T>({
   renderRow: (row: T) => ReactNode
   /** Optional full-width row under a row, e.g. an inline form; null for none. */
   renderDetail?: (row: T) => ReactNode | null
+  /** Base for the table's test ids: `<testId>-row-<key>`, `<testId>-empty`, … */
+  testId: string
 }) {
-  if (error) return <ErrorMessage error={error} />
-  if (loading && !rows) return <p className="muted">Loading…</p>
-  if (!rows || rows.length === 0) return <p className="muted">{empty}</p>
+  if (error) return <ErrorMessage error={error} testId={`${testId}-error`} />
+  if (loading && !rows) return <p className="muted" data-testid={`${testId}-loading`}>Loading…</p>
+  if (!rows || rows.length === 0) return <p className="muted" data-testid={`${testId}-empty`}>{empty}</p>
   return (
     <div className="table-wrap">
-      <table className={loading ? 'is-loading' : undefined}>
+      <table className={loading ? 'is-loading' : undefined} data-testid={testId}>
         <thead>
           <tr>
             {columns.map((c) => (
@@ -95,12 +117,13 @@ export function DataTable<T>({
         </thead>
         <tbody>
           {rows.map((row) => {
+            const key = rowKey(row)
             const detail = renderDetail?.(row)
             return (
-              <Fragment key={rowKey(row)}>
-                <tr>{renderRow(row)}</tr>
+              <Fragment key={key}>
+                <tr data-testid={`${testId}-row-${key}`}>{renderRow(row)}</tr>
                 {detail && (
-                  <tr className="detail-row">
+                  <tr className="detail-row" data-testid={`${testId}-detail-${key}`}>
                     <td colSpan={columns.length}>{detail}</td>
                   </tr>
                 )}

@@ -46,13 +46,21 @@ export function AccountPage() {
     return (
       <>
         <p>
-          <Link to="/">← Accounts</Link>
+          <Link to="/" data-testid="back-to-accounts">
+            ← Accounts
+          </Link>
         </p>
-        <ErrorMessage error={error} />
+        <ErrorMessage error={error} testId="account-error" />
       </>
     )
   }
-  if (!account) return <p className="muted">Loading…</p>
+  if (!account) {
+    return (
+      <p className="muted" data-testid="account-loading">
+        Loading…
+      </p>
+    )
+  }
 
   // Admins can open anyone's account, but only the owner may move its money
   const isOwner = account.userId === user?.id
@@ -60,22 +68,25 @@ export function AccountPage() {
   return (
     <>
       <p>
-        <Link to="/">← Accounts</Link>
+        <Link to="/" data-testid="back-to-accounts">
+          ← Accounts
+        </Link>
       </p>
       {!isOwner && (
-        <p className="notice">
+        <p className="notice" data-testid="admin-view-notice">
           You are viewing user #{account.userId}'s account as an admin. Sending money and deposits are only available
           to the owner.
         </p>
       )}
       <div className="page-header">
         <div>
-          <h1>Account #{account.id}</h1>
-          <p className="muted">
-            {account.currency} · opened {formatDate(account.createdAt)} · <StatusBadge status={account.status} />
+          <h1 data-testid="account-title">Account #{account.id}</h1>
+          <p className="muted" data-testid="account-meta">
+            {account.currency} · opened {formatDate(account.createdAt)} ·{' '}
+            <StatusBadge status={account.status} testId="account-status" />
           </p>
         </div>
-        <div className="balance big">{formatMoney(account.balance, account.currency)}</div>
+        <div className="balance big" data-testid="account-balance">{formatMoney(account.balance, account.currency)}</div>
       </div>
 
       <div className="tabs" role="tablist">
@@ -86,6 +97,7 @@ export function AccountPage() {
             aria-selected={tab === t}
             className={tab === t ? 'active' : undefined}
             onClick={() => setSearchParams({ tab: t }, { replace: true })}
+            data-testid={`tab-${t}`}
           >
             {t[0].toUpperCase() + t.slice(1)}
           </button>
@@ -131,6 +143,7 @@ function TransfersTab({
         error={error}
         empty="No transfers yet."
         rowKey={(t) => t.id}
+        testId="transfers-table"
         renderRow={(t) => {
           const outgoing = t.fromAccountId === account.id
           // The fee comes out of what the recipient gets
@@ -147,14 +160,18 @@ function TransfersTab({
                 {!outgoing && fee > 0 && <div className="muted small">after {formatMoney(fee, t.currency)} fee</div>}
               </td>
               <td>
-                <StatusBadge status={t.status} />
+                <StatusBadge status={t.status} testId="transfer-status" />
                 {t.failureReason && <div className="muted small">{t.failureReason}</div>}
               </td>
               {isAdmin && (
                 <td className="actions">
-                  <Link to={`/admin/journal?type=transfer&id=${t.id}`}>Journal</Link>
+                  <Link to={`/admin/journal?type=transfer&id=${t.id}`} data-testid="transfer-journal-link">
+                    Journal
+                  </Link>
                   {t.status === 'COMPLETED' && reversing !== t.id && (
-                    <button onClick={() => setReversing(t.id)}>Reverse</button>
+                    <button onClick={() => setReversing(t.id)} data-testid="transfer-reverse-button">
+                      Reverse
+                    </button>
                   )}
                 </td>
               )}
@@ -174,7 +191,7 @@ function TransfersTab({
           ) : null
         }
       />
-      <Pager data={data} onPage={setPage} />
+      <Pager data={data} onPage={setPage} testId="transfers-pager" />
     </>
   )
 }
@@ -192,7 +209,7 @@ function TransferForm({ account, onBooked }: { account: Account; onBooked: () =>
 
   if (!TRANSFER_CURRENCIES.includes(account.currency)) {
     return (
-      <p className="muted small action-form">
+      <p className="muted small action-form" data-testid="transfers-disabled-notice">
         Transfers in {account.currency} are not enabled. Only {TRANSFER_CURRENCIES.join(' and ')} accounts can send
         money.
       </p>
@@ -243,7 +260,7 @@ function TransferForm({ account, onBooked }: { account: Account; onBooked: () =>
   }
 
   return (
-    <form className="inline-form action-form" onSubmit={submit}>
+    <form className="inline-form action-form" onSubmit={submit} data-testid="transfer-form">
       <AccountPicker
         value={toAccount}
         onChange={setToAccount}
@@ -251,6 +268,7 @@ function TransferForm({ account, onBooked }: { account: Account; onBooked: () =>
         exclude={account.id}
         placeholder="To account #"
         label="To account number"
+        testId="transfer-to-account"
       />
       <input
         inputMode="decimal"
@@ -258,15 +276,16 @@ function TransferForm({ account, onBooked }: { account: Account; onBooked: () =>
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
         aria-label="Amount"
+        data-testid="transfer-amount"
       />
-      <button type="submit" className="primary" disabled={submitting}>
+      <button type="submit" className="primary" disabled={submitting} data-testid="transfer-submit">
         {submitting ? 'Sending…' : 'Send money'}
       </button>
       <span className="muted small">
         The other account must also be in {account.currency}. The recipient gets the amount minus a {FEE_PERCENT}% fee.
       </span>
-      <ErrorMessage error={error} />
-      <SuccessMessage message={success} />
+      <ErrorMessage error={error} testId="transfer-error" />
+      <SuccessMessage message={success} testId="transfer-success" />
     </form>
   )
 }
@@ -302,7 +321,7 @@ function ReverseForm({
   }
 
   return (
-    <form className="inline-form" onSubmit={submit}>
+    <form className="inline-form" onSubmit={submit} data-testid="reverse-form">
       <span>
         Reverse transfer #{transfer.id} of {formatMoney(transfer.amount, transfer.currency)}, fee included?
       </span>
@@ -313,14 +332,15 @@ function ReverseForm({
         maxLength={200}
         aria-label="Reason for the reversal"
         autoFocus
+        data-testid="reverse-reason"
       />
-      <button type="submit" className="danger" disabled={submitting}>
+      <button type="submit" className="danger" disabled={submitting} data-testid="reverse-submit">
         {submitting ? 'Reversing…' : 'Reverse'}
       </button>
-      <button type="button" onClick={onCancel}>
+      <button type="button" onClick={onCancel} data-testid="reverse-cancel">
         Cancel
       </button>
-      <ErrorMessage error={error} />
+      <ErrorMessage error={error} testId="reverse-error" />
     </form>
   )
 }
@@ -357,6 +377,7 @@ function DepositsTab({
         error={error}
         empty="No deposits yet."
         rowKey={(d) => d.id}
+        testId="deposits-table"
         renderRow={(d) => (
           <>
             <td>{formatDate(d.createdAt)}</td>
@@ -366,7 +387,7 @@ function DepositsTab({
             </td>
             <td className="mono">{d.gatewayReference ?? '—'}</td>
             <td>
-              <StatusBadge status={d.status} />
+              <StatusBadge status={d.status} testId="deposit-status" />
               {d.status === 'PENDING' && d.expiresAt && (
                 <div className="muted small">waiting for the bank until {formatDate(d.expiresAt)}</div>
               )}
@@ -375,7 +396,7 @@ function DepositsTab({
           </>
         )}
       />
-      <Pager data={data} onPage={setPage} />
+      <Pager data={data} onPage={setPage} testId="deposits-pager" />
     </>
   )
 }
@@ -406,21 +427,22 @@ function DepositForm({ account, onCreated }: { account: Account; onCreated: () =
   }
 
   return (
-    <form className="inline-form action-form" onSubmit={submit}>
+    <form className="inline-form action-form" onSubmit={submit} data-testid="deposit-form">
       <input
         inputMode="decimal"
         placeholder={`Amount (${account.currency})`}
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
         aria-label="Amount"
+        data-testid="deposit-amount"
       />
-      <button type="submit" className="primary" disabled={submitting}>
+      <button type="submit" className="primary" disabled={submitting} data-testid="deposit-submit">
         {submitting ? 'Creating…' : 'Top up'}
       </button>
       <span className="muted small">
         The bank confirms the payment in a few seconds; {FEE_PERCENT}% is kept as a fee.
       </span>
-      <ErrorMessage error={error} />
+      <ErrorMessage error={error} testId="deposit-error" />
     </form>
   )
 }
@@ -450,9 +472,9 @@ function HoldsTab({ account }: { account: Account }) {
       <p className="muted small">
         Money a merchant has reserved, e.g. at checkout. Active holds can't be spent until they are captured, released
         or expire.
-        {reserved > 0 && <> Reserved on this page: {formatMoney(reserved, account.currency)}.</>}
+        {reserved > 0 && <span data-testid="holds-reserved"> Reserved on this page: {formatMoney(reserved, account.currency)}.</span>}
       </p>
-      <ErrorMessage error={actionError} />
+      <ErrorMessage error={actionError} testId="holds-action-error" />
       <DataTable
         columns={['#', 'Date', 'Amount', 'Merchant', 'Status', 'Expires', ...(isAdmin ? [''] : [])]}
         rows={data?.content}
@@ -460,6 +482,7 @@ function HoldsTab({ account }: { account: Account }) {
         error={error}
         empty="No holds."
         rowKey={(h) => h.id}
+        testId="account-holds-table"
         renderRow={(h) => (
           <>
             <td>{h.id}</td>
@@ -467,21 +490,23 @@ function HoldsTab({ account }: { account: Account }) {
             <td className="num">{formatMoney(h.amount, h.currency)}</td>
             <td>{h.merchantId ? `User #${h.merchantId}` : '—'}</td>
             <td>
-              <StatusBadge status={h.status} />
+              <StatusBadge status={h.status} testId="hold-status" />
               {h.releasedAt && <div className="muted small">released {formatDate(h.releasedAt)}</div>}
             </td>
             <td>{formatDate(h.expiresAt)}</td>
             {isAdmin && (
               <td className="actions">
                 {h.status === 'ACTIVE' && new Date(h.expiresAt).getTime() <= Date.now() && (
-                  <button onClick={() => expire(h)}>Expire now</button>
+                  <button onClick={() => expire(h)} data-testid="hold-expire-button">
+                    Expire now
+                  </button>
                 )}
               </td>
             )}
           </>
         )}
       />
-      <Pager data={data} onPage={setPage} />
+      <Pager data={data} onPage={setPage} testId="account-holds-pager" />
     </>
   )
 }
@@ -502,18 +527,23 @@ function PostingsTab({ account }: { account: Account }) {
         error={error}
         empty="No ledger postings yet."
         rowKey={(p) => p.id}
+        testId="postings-table"
         renderRow={(p) => (
           <>
             <td>{formatDate(p.createdAt)}</td>
             <td>
-              {isAdmin ? <Link to={`/admin/journal?entry=${p.journalEntryId}`}>#{p.journalEntryId}</Link> : `#${p.journalEntryId}`}
+              {isAdmin ? (
+                <Link to={`/admin/journal?entry=${p.journalEntryId}`} data-testid="posting-journal-link">
+                  #{p.journalEntryId}
+                </Link>
+              ) : `#${p.journalEntryId}`}
             </td>
             <td>{p.direction}</td>
             <td className={`num ${p.direction === 'DEBIT' ? 'neg' : 'pos'}`}>{formatMoney(p.amount, p.currency)}</td>
           </>
         )}
       />
-      <Pager data={data} onPage={setPage} />
+      <Pager data={data} onPage={setPage} testId="postings-pager" />
     </>
   )
 }

@@ -86,8 +86,13 @@ function Lookup({
   }
 
   return (
-    <form className="inline-form action-form" onSubmit={submit}>
-      <select value={type} onChange={(e) => setType(e.target.value)} aria-label="Look up by">
+    <form className="inline-form action-form" onSubmit={submit} data-testid="journal-lookup-form">
+      <select
+        value={type}
+        onChange={(e) => setType(e.target.value)}
+        aria-label="Look up by"
+        data-testid="journal-lookup-type"
+      >
         {REFERENCE_TYPES.map((t) => (
           <option key={t} value={t}>
             {t[0].toUpperCase() + t.slice(1)} #
@@ -95,14 +100,23 @@ function Lookup({
         ))}
         <option value="entry">Journal entry #</option>
       </select>
-      <input inputMode="numeric" placeholder="Number" value={id} onChange={(e) => setId(e.target.value)} aria-label="Number" />
-      <button type="submit">Find</button>
+      <input
+        inputMode="numeric"
+        placeholder="Number"
+        value={id}
+        onChange={(e) => setId(e.target.value)}
+        aria-label="Number"
+        data-testid="journal-lookup-input"
+      />
+      <button type="submit" data-testid="journal-lookup-submit">
+        Find
+      </button>
       {active && (
-        <button type="button" className="link" onClick={onClear}>
+        <button type="button" className="link" onClick={onClear} data-testid="journal-lookup-clear">
           Show all entries
         </button>
       )}
-      <ErrorMessage error={error} />
+      <ErrorMessage error={error} testId="journal-lookup-error" />
     </form>
   )
 }
@@ -111,11 +125,19 @@ function AllEntries() {
   const { data, error, loading, setPage } = usePaged((page, size) => journalApi.list(page, size), [])
   return (
     <>
-      <ErrorMessage error={error} />
-      {loading && !data && <p className="muted">Loading…</p>}
-      {data?.content.length === 0 && <p className="muted">No journal entries yet.</p>}
+      <ErrorMessage error={error} testId="journal-error" />
+      {loading && !data && (
+        <p className="muted" data-testid="journal-loading">
+          Loading…
+        </p>
+      )}
+      {data?.content.length === 0 && (
+        <p className="muted" data-testid="journal-empty">
+          No journal entries yet.
+        </p>
+      )}
       {data && data.content.length > 0 && <EntriesTable entries={data.content} loading={loading} />}
-      <Pager data={data} onPage={setPage} />
+      <Pager data={data} onPage={setPage} testId="journal-pager" />
     </>
   )
 }
@@ -137,8 +159,14 @@ function SingleEntry({ id }: { id: number }) {
     }
   }, [id])
 
-  if (error) return <ErrorMessage error={error} />
-  if (!entry) return <p className="muted">Loading…</p>
+  if (error) return <ErrorMessage error={error} testId="journal-error" />
+  if (!entry) {
+    return (
+      <p className="muted" data-testid="journal-loading">
+        Loading…
+      </p>
+    )
+  }
   return <EntriesTable entries={[entry]} loading={false} initiallyOpen={entry.id} />
 }
 
@@ -159,11 +187,17 @@ function ReferenceResults({ type, id }: { type: string; id: number }) {
     }
   }, [type, id])
 
-  if (error) return <ErrorMessage error={error} />
-  if (!entries) return <p className="muted">Loading…</p>
+  if (error) return <ErrorMessage error={error} testId="journal-error" />
+  if (!entries) {
+    return (
+      <p className="muted" data-testid="journal-loading">
+        Loading…
+      </p>
+    )
+  }
   if (entries.length === 0) {
     return (
-      <p className="muted">
+      <p className="muted" data-testid="journal-empty">
         No entries for {type} #{id}.
       </p>
     )
@@ -184,7 +218,7 @@ function EntriesTable({
 
   return (
     <div className="table-wrap">
-      <table className={loading ? 'is-loading' : undefined}>
+      <table className={loading ? 'is-loading' : undefined} data-testid="journal-table">
         <thead>
           <tr>
             <th>#</th>
@@ -201,6 +235,7 @@ function EntriesTable({
                 className="clickable"
                 onClick={() => setOpenId(openId === entry.id ? null : entry.id)}
                 aria-expanded={openId === entry.id}
+                data-testid={`journal-table-row-${entry.id}`}
               >
                 <td>{entry.id}</td>
                 <td>{formatDate(entry.createdAt)}</td>
@@ -209,7 +244,7 @@ function EntriesTable({
                 <td>{entry.description ?? '—'}</td>
               </tr>
               {openId === entry.id && (
-                <tr className="detail-row">
+                <tr className="detail-row" data-testid={`journal-table-detail-${entry.id}`}>
                   <td colSpan={5}>
                     <EntryDetail id={entry.id} />
                   </td>
@@ -238,16 +273,30 @@ function EntryDetail({ id }: { id: number }) {
     }
   }, [id])
 
-  if (error) return <ErrorMessage error={error} />
-  if (!entry) return <span className="muted">Loading…</span>
-  if (!entry.postings?.length) return <span className="muted">No postings.</span>
+  if (error) return <ErrorMessage error={error} testId="journal-entry-error" />
+  if (!entry) {
+    return (
+      <span className="muted" data-testid="journal-entry-loading">
+        Loading…
+      </span>
+    )
+  }
+  if (!entry.postings?.length) {
+    return (
+      <span className="muted" data-testid="journal-entry-no-postings">
+        No postings.
+      </span>
+    )
+  }
 
   return (
     <>
       {entry.postings.map((p) => (
-        <div key={p.id} className="posting-line">
+        <div key={p.id} className="posting-line" data-testid={`journal-posting-${p.id}`}>
           {/* System accounts (fees, bank clearing) answer as not found, even for admins */}
-          <Link to={`/accounts/${p.accountId}`}>Account #{p.accountId}</Link>
+          <Link to={`/accounts/${p.accountId}`} data-testid="journal-posting-account-link">
+            Account #{p.accountId}
+          </Link>
           <span>{p.direction}</span>
           <span className={`num ${p.direction === 'DEBIT' ? 'neg' : 'pos'}`}>{formatMoney(p.amount, p.currency)}</span>
         </div>

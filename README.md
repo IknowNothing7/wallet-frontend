@@ -87,3 +87,18 @@ src/
   format.ts           money and date formatting
   usePaged.ts         hook for the backend's paged endpoints
 ```
+
+## Test ids
+
+Elements tests interact with carry a `data-testid`, in kebab-case as `<area>-<element>`: `login-email`,
+`transfer-submit`, `nav-journal`. Repeated rows append the record id: `transfers-table-row-42`,
+`account-card-7`. Inside a row, elements share one id (`transfer-status`, `hold-release`), so scope the
+lookup to the row first, e.g. `page.getByTestId('transfers-table-row-42').getByTestId('transfer-status')`.
+
+The shared components take a `testId` and derive their children's ids from it:
+
+- `DataTable` (required): `<testId>` on the table, `<testId>-row-<key>`, `<testId>-detail-<key>`,
+  `<testId>-empty`, `<testId>-loading`, `<testId>-error`
+- `Pager`: `<testId>`, `<testId>-newer`, `<testId>-older`, `<testId>-info`
+- `AccountPicker` (required): `<testId>` on the input, `<testId>-list`, `<testId>-option-<accountId>`
+- `ErrorMessage`, `SuccessMessage`, `StatusBadge`: `<testId>` on the element

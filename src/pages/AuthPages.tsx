@@ -6,7 +6,11 @@ import { useAuth } from '../auth/AuthContext'
 import { ErrorMessage } from '../components/ui'
 
 function FieldError({ errors, name }: { errors: Record<string, string> | null; name: string }) {
-  return errors?.[name] ? <span className="field-error">{errors[name]}</span> : null
+  return errors?.[name] ? (
+    <span className="field-error" data-testid={`register-${name}-error`}>
+      {errors[name]}
+    </span>
+  ) : null
 }
 
 export function LoginPage() {
@@ -32,10 +36,17 @@ export function LoginPage() {
   return (
     <div className="auth-card">
       <h1>Log in</h1>
-      <form onSubmit={submit}>
+      <form onSubmit={submit} data-testid="login-form">
         <label>
           Email
-          <input type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input
+            type="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            data-testid="login-email"
+          />
         </label>
         <label>
           Password
@@ -45,15 +56,16 @@ export function LoginPage() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            data-testid="login-password"
           />
         </label>
-        <ErrorMessage error={error} />
-        <button type="submit" className="primary" disabled={submitting}>
+        <ErrorMessage error={error} testId="login-error" />
+        <button type="submit" className="primary" disabled={submitting} data-testid="login-submit">
           {submitting ? 'Logging in…' : 'Log in'}
         </button>
       </form>
       <p className="muted">
-        No account? <Link to="/register">Register</Link>
+        No account? <Link to="/register" data-testid="register-link">Register</Link>
       </p>
     </div>
   )
@@ -87,15 +99,30 @@ export function RegisterPage() {
   return (
     <div className="auth-card">
       <h1>Create account</h1>
-      <form onSubmit={submit}>
+      <form onSubmit={submit} data-testid="register-form">
         <label>
           Name
-          <input autoComplete="name" required maxLength={100} value={form.name} onChange={update('name')} />
+          <input
+            autoComplete="name"
+            required
+            maxLength={100}
+            value={form.name}
+            onChange={update('name')}
+            data-testid="register-name"
+          />
           <FieldError errors={fieldErrors} name="name" />
         </label>
         <label>
           Email
-          <input type="email" autoComplete="email" required maxLength={100} value={form.email} onChange={update('email')} />
+          <input
+            type="email"
+            autoComplete="email"
+            required
+            maxLength={100}
+            value={form.email}
+            onChange={update('email')}
+            data-testid="register-email"
+          />
           <FieldError errors={fieldErrors} name="email" />
         </label>
         <label>
@@ -108,6 +135,7 @@ export function RegisterPage() {
             maxLength={72}
             value={form.password}
             onChange={update('password')}
+            data-testid="register-password"
           />
           <span className="hint">At least 8 characters with upper and lower case letters, a digit and a symbol.</span>
           <FieldError errors={fieldErrors} name="password" />
@@ -120,16 +148,17 @@ export function RegisterPage() {
             required
             value={form.confirmPassword}
             onChange={update('confirmPassword')}
+            data-testid="register-confirm-password"
           />
           <FieldError errors={fieldErrors} name="confirmPassword" />
         </label>
-        <ErrorMessage error={error} />
-        <button type="submit" className="primary" disabled={submitting}>
+        <ErrorMessage error={error} testId="register-error" />
+        <button type="submit" className="primary" disabled={submitting} data-testid="register-submit">
           {submitting ? 'Creating…' : 'Create account'}
         </button>
       </form>
       <p className="muted">
-        Already registered? <Link to="/login">Log in</Link>
+        Already registered? <Link to="/login" data-testid="login-link">Log in</Link>
       </p>
     </div>
   )
