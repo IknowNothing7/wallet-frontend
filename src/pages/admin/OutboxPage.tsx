@@ -39,23 +39,38 @@ export function OutboxPage() {
           <p className="muted">Events waiting for, or already sent to, Kafka.</p>
         </div>
         <div className="inline-form">
-          <select value={status} onChange={(e) => setStatus(e.target.value as OutboxStatus | '')} aria-label="Status">
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value as OutboxStatus | '')}
+            aria-label="Status"
+            data-testid="outbox-status-filter"
+          >
             {STATUSES.map((s) => (
               <option key={s} value={s}>
                 {s || 'All statuses'}
               </option>
             ))}
           </select>
-          <button onClick={reload}>Refresh</button>
+          <button onClick={reload} data-testid="outbox-refresh">
+            Refresh
+          </button>
         </div>
       </div>
-      <ErrorMessage error={actionError} />
-      <ErrorMessage error={error} />
-      {loading && !data && <p className="muted">Loading…</p>}
-      {data?.content.length === 0 && <p className="muted">No events.</p>}
+      <ErrorMessage error={actionError} testId="outbox-action-error" />
+      <ErrorMessage error={error} testId="outbox-error" />
+      {loading && !data && (
+        <p className="muted" data-testid="outbox-loading">
+          Loading…
+        </p>
+      )}
+      {data?.content.length === 0 && (
+        <p className="muted" data-testid="outbox-empty">
+          No events.
+        </p>
+      )}
       {data && data.content.length > 0 && (
         <div className="table-wrap">
-          <table className={loading ? 'is-loading' : undefined}>
+          <table className={loading ? 'is-loading' : undefined} data-testid="outbox-table">
             <thead>
               <tr>
                 <th>#</th>
@@ -74,6 +89,7 @@ export function OutboxPage() {
                     className="clickable"
                     onClick={() => setOpenId(openId === event.id ? null : event.id)}
                     aria-expanded={openId === event.id}
+                    data-testid={`outbox-table-row-${event.id}`}
                   >
                     <td>{event.id}</td>
                     <td>{formatDate(event.createdAt)}</td>
@@ -82,13 +98,14 @@ export function OutboxPage() {
                       {event.aggregateType} #{event.aggregateId}
                     </td>
                     <td>
-                      <StatusBadge status={event.status} />
+                      <StatusBadge status={event.status} testId="outbox-event-status" />
                     </td>
                     <td className="num">{event.attempts}</td>
                     <td>
                       {event.status === 'FAILED' && (
                         <button
                           disabled={retrying === event.id}
+                          data-testid="outbox-retry"
                           onClick={(e) => {
                             e.stopPropagation()
                             retry(event.id)
@@ -100,13 +117,13 @@ export function OutboxPage() {
                     </td>
                   </tr>
                   {openId === event.id && (
-                    <tr className="detail-row">
+                    <tr className="detail-row" data-testid={`outbox-table-detail-${event.id}`}>
                       <td colSpan={7}>
                         <div className="muted small">
                           Published: {formatDate(event.publishedAt)}
                           {event.lastError && <> · Last error: {event.lastError}</>}
                         </div>
-                        <pre>{JSON.stringify(event.payload, null, 2)}</pre>
+                        <pre data-testid="outbox-event-payload">{JSON.stringify(event.payload, null, 2)}</pre>
                       </td>
                     </tr>
                   )}
@@ -116,7 +133,7 @@ export function OutboxPage() {
           </table>
         </div>
       )}
-      <Pager data={data} onPage={setPage} />
+      <Pager data={data} onPage={setPage} testId="outbox-pager" />
     </>
   )
 }

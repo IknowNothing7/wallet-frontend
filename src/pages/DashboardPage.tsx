@@ -53,33 +53,51 @@ export function DashboardPage() {
       <div className="page-header">
         <h1>Your accounts</h1>
         {accounts && available.length > 0 && (
-          <form className="inline-form" onSubmit={create}>
-            <select value={selected} onChange={(e) => setCurrency(e.target.value)} aria-label="Currency">
+          <form className="inline-form" onSubmit={create} data-testid="open-account-form">
+            <select
+              value={selected}
+              onChange={(e) => setCurrency(e.target.value)}
+              aria-label="Currency"
+              data-testid="open-account-currency"
+            >
               {available.map((c) => (
                 <option key={c}>{c}</option>
               ))}
             </select>
-            <button type="submit" className="primary" disabled={creating}>
+            <button type="submit" className="primary" disabled={creating} data-testid="open-account-submit">
               {creating ? 'Opening…' : 'Open account'}
             </button>
           </form>
         )}
       </div>
-      <ErrorMessage error={createError} />
-      <ErrorMessage error={error} />
+      <ErrorMessage error={createError} testId="open-account-error" />
+      <ErrorMessage error={error} testId="accounts-error" />
 
-      {accounts === null && !error && <p className="muted">Loading…</p>}
-      {accounts?.length === 0 && <p className="muted">You don't have any accounts yet. Open one above.</p>}
+      {accounts === null && !error && (
+        <p className="muted" data-testid="accounts-loading">
+          Loading…
+        </p>
+      )}
+      {accounts?.length === 0 && (
+        <p className="muted" data-testid="accounts-empty">
+          You don't have any accounts yet. Open one above.
+        </p>
+      )}
 
-      <div className="cards">
+      <div className="cards" data-testid="account-cards">
         {accounts?.map((account) => (
-          <Link key={account.id} to={`/accounts/${account.id}`} className="card account-card">
+          <Link
+            key={account.id}
+            to={`/accounts/${account.id}`}
+            className="card account-card"
+            data-testid={`account-card-${account.id}`}
+          >
             <div className="card-top">
               <span className="muted">Account #{account.id}</span>
-              <StatusBadge status={account.status} />
+              <StatusBadge status={account.status} testId="account-card-status" />
             </div>
-            <div className="balance">{formatMoney(account.balance, account.currency)}</div>
-            <div className="muted">
+            <div className="balance" data-testid="account-card-balance">{formatMoney(account.balance, account.currency)}</div>
+            <div className="muted" data-testid="account-card-currency">
               {account.currency}
               {!TRANSFER_CURRENCIES.includes(account.currency) && ' · deposits only'}
             </div>
@@ -111,16 +129,19 @@ function AccountLookup() {
   return (
     <>
       <h2>Look up an account</h2>
-      <form className="inline-form" onSubmit={submit}>
+      <form className="inline-form" onSubmit={submit} data-testid="account-lookup-form">
         <input
           inputMode="numeric"
           placeholder="Account #"
           value={id}
           onChange={(e) => setId(e.target.value)}
           aria-label="Account number"
+          data-testid="account-lookup-input"
         />
-        <button type="submit">Open</button>
-        <ErrorMessage error={error} />
+        <button type="submit" data-testid="account-lookup-submit">
+          Open
+        </button>
+        <ErrorMessage error={error} testId="account-lookup-error" />
       </form>
     </>
   )

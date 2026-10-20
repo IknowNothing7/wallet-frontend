@@ -104,12 +104,16 @@ export function HoldsPage() {
         <h2>Your holds</h2>
         <div className="inline-form">
           <TrackHoldForm onFound={track} />
-          <button onClick={load}>Refresh</button>
+          <button onClick={load} data-testid="holds-refresh">
+            Refresh
+          </button>
         </div>
       </div>
-      <ErrorMessage error={loadError} />
+      <ErrorMessage error={loadError} testId="holds-load-error" />
       {holds === null ? (
-        <p className="muted">Loading…</p>
+        <p className="muted" data-testid="holds-loading">
+          Loading…
+        </p>
       ) : (
         <DataTable
           columns={['#', 'Customer account', 'Amount', 'Status', 'Expires', '']}
@@ -118,18 +122,19 @@ export function HoldsPage() {
           error={null}
           empty="No holds placed from this browser yet."
           rowKey={(h) => h.id}
+          testId="merchant-holds-table"
           renderRow={(h) => (
             <>
               <td>{h.id}</td>
               <td>#{h.accountId}</td>
               <td className="num">{formatMoney(h.amount, h.currency)}</td>
               <td>
-                <StatusBadge status={h.status} />
+                <StatusBadge status={h.status} testId="hold-status" />
               </td>
               <td>{formatDate(h.expiresAt)}</td>
               <td className="actions">
                 {h.status !== 'ACTIVE' && (
-                  <button className="link" onClick={() => forget(h.id)}>
+                  <button className="link" onClick={() => forget(h.id)} data-testid="hold-remove">
                     Remove
                   </button>
                 )}
@@ -203,7 +208,7 @@ function PlaceHoldForm({ onPlaced }: { onPlaced: (hold: Hold) => void }) {
   }
 
   return (
-    <form className="card stacked-form" onSubmit={submit}>
+    <form className="card stacked-form" onSubmit={submit} data-testid="place-hold-form">
       <label>
         Customer account #
         <AccountPicker
@@ -212,16 +217,23 @@ function PlaceHoldForm({ onPlaced }: { onPlaced: (hold: Hold) => void }) {
           includeMine={false}
           placeholder="Customer account #"
           label="Customer account number"
+          testId="place-hold-account"
         />
       </label>
       <div className="form-row">
         <label>
           Amount
-          <input inputMode="decimal" placeholder="25.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          <input
+            inputMode="decimal"
+            placeholder="25.00"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            data-testid="place-hold-amount"
+          />
         </label>
         <label>
           Currency <span className="hint">must match the customer's account</span>
-          <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
+          <select value={currency} onChange={(e) => setCurrency(e.target.value)} data-testid="place-hold-currency">
             {CURRENCIES.map((c) => (
               <option key={c}>{c}</option>
             ))}
@@ -236,11 +248,12 @@ function PlaceHoldForm({ onPlaced }: { onPlaced: (hold: Hold) => void }) {
           min={toLocalInput(new Date())}
           max={toLocalInput(new Date(Date.now() + days(MAX_HOLD_DAYS)))}
           onChange={(e) => setExpiresAt(e.target.value)}
+          data-testid="place-hold-expires"
         />
       </label>
-      <ErrorMessage error={error} />
+      <ErrorMessage error={error} testId="place-hold-error" />
       <div>
-        <button type="submit" className="primary" disabled={submitting}>
+        <button type="submit" className="primary" disabled={submitting} data-testid="place-hold-submit">
           {submitting ? 'Placing…' : 'Place hold'}
         </button>
       </div>
@@ -270,10 +283,19 @@ function TrackHoldForm({ onFound }: { onFound: (hold: Hold) => void }) {
   }
 
   return (
-    <form className="inline-form" onSubmit={submit}>
-      <input inputMode="numeric" placeholder="Hold #" value={id} onChange={(e) => setId(e.target.value)} aria-label="Hold number" />
-      <button type="submit">Add</button>
-      <ErrorMessage error={error} />
+    <form className="inline-form" onSubmit={submit} data-testid="track-hold-form">
+      <input
+        inputMode="numeric"
+        placeholder="Hold #"
+        value={id}
+        onChange={(e) => setId(e.target.value)}
+        aria-label="Hold number"
+        data-testid="track-hold-input"
+      />
+      <button type="submit" data-testid="track-hold-submit">
+        Add
+      </button>
+      <ErrorMessage error={error} testId="track-hold-error" />
     </form>
   )
 }
@@ -306,31 +328,44 @@ function HoldActions({
     }
   }
 
-  if (expired) return <span className="muted small">Past its expiry; it will be marked EXPIRED shortly.</span>
+  if (expired) {
+    return (
+      <span className="muted small" data-testid="hold-expired-notice">
+        Past its expiry; it will be marked EXPIRED shortly.
+      </span>
+    )
+  }
 
   return (
-    <div className="inline-form">
+    <div className="inline-form" data-testid="hold-actions">
       {accounts.length > 0 ? (
         <>
           <span>Capture into</span>
-          <select value={selected} onChange={(e) => setDestination(e.target.value)} aria-label="Destination account">
+          <select
+            value={selected}
+            onChange={(e) => setDestination(e.target.value)}
+            aria-label="Destination account"
+            data-testid="hold-capture-account"
+          >
             {accounts.map((a) => (
               <option key={a.id} value={a.id}>
                 #{a.id} · {formatMoney(a.balance, a.currency)}
               </option>
             ))}
           </select>
-          <button className="primary" disabled={busy !== null} onClick={() => run('capture')}>
+          <button className="primary" disabled={busy !== null} onClick={() => run('capture')} data-testid="hold-capture">
             {busy === 'capture' ? 'Capturing…' : 'Capture'}
           </button>
         </>
       ) : (
-        <span className="muted small">Open a {hold.currency} account to capture this hold.</span>
+        <span className="muted small" data-testid="hold-no-capture-account">
+          Open a {hold.currency} account to capture this hold.
+        </span>
       )}
-      <button disabled={busy !== null} onClick={() => run('release')}>
+      <button disabled={busy !== null} onClick={() => run('release')} data-testid="hold-release">
         {busy === 'release' ? 'Releasing…' : 'Release'}
       </button>
-      <ErrorMessage error={error} />
+      <ErrorMessage error={error} testId="hold-action-error" />
     </div>
   )
 }

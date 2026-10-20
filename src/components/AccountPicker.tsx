@@ -24,6 +24,7 @@ export function AccountPicker({
   includeMine = true,
   placeholder = 'Account #',
   label,
+  testId,
 }: {
   value: string
   onChange: (value: string) => void
@@ -37,6 +38,8 @@ export function AccountPicker({
   includeMine?: boolean
   placeholder?: string
   label: string
+  /** Test id of the input; the list and options get `<testId>-list` and `<testId>-option-<id>`. */
+  testId: string
 }) {
   const { user } = useAuth()
   const listId = useId()
@@ -122,9 +125,10 @@ export function AccountPicker({
         onClick={() => !open && openList()}
         onBlur={() => setOpen(false)}
         onKeyDown={onKeyDown}
+        data-testid={testId}
       />
       {show && (
-        <ul id={listId} role="listbox" className="picker-list">
+        <ul id={listId} role="listbox" className="picker-list" data-testid={`${testId}-list`}>
           {options.map((option, index) => (
             <li key={`${option.group}-${option.id}`} role="presentation">
               {(index === 0 || options[index - 1].group !== option.group) && (
@@ -141,6 +145,7 @@ export function AccountPicker({
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => choose(option)}
                 onMouseEnter={() => setActive(index)}
+                data-testid={`${testId}-option-${option.id}`}
               >
                 <span>#{option.id}</span>
                 {option.account && (

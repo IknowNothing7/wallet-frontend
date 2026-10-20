@@ -14,7 +14,7 @@ import { HoldsPage } from './pages/merchant/HoldsPage'
 function RequireAuth({ children }: { children: ReactNode }) {
   const { user, restoring } = useAuth()
   const location = useLocation()
-  if (restoring) return <p className="muted center">Loading…</p>
+  if (restoring) return <p className="muted center" data-testid="auth-loading">Loading…</p>
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />
   return children
 }
@@ -34,7 +34,7 @@ function RequireMerchant({ children }: { children: ReactNode }) {
 function GuestOnly({ children }: { children: ReactNode }) {
   const { user, restoring } = useAuth()
   const location = useLocation()
-  if (restoring) return <p className="muted center">Loading…</p>
+  if (restoring) return <p className="muted center" data-testid="auth-loading">Loading…</p>
   const from = (location.state as { from?: string } | null)?.from ?? '/'
   return user ? <Navigate to={from} replace /> : children
 }
