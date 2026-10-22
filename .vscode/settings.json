@@ -1,0 +1,26 @@
+{
+  // Use the TypeScript 7 (native/Go) language server via the "TypeScript (Native Preview)" extension
+  "js/ts.experimental.useTsgo": true,
+  "js/ts.tsdk.path": "node_modules/typescript",
+
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "typescriptteam.native-preview"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "typescriptteam.native-preview"
+  },
+  "js/ts.preferences.importModuleSpecifier": "relative",
+  "js/ts.updateImportsOnFileMove.enabled": "always",
+
+  "files.exclude": {
+    "dist": true
+  },
+  "search.exclude": {
+    "dist": true,
+    "node_modules": true
+  }
+}
